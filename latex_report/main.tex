@@ -84,7 +84,32 @@ Here, talk about the related work you encountered for your approach. Cite at lea
 
 \section{Dataset}
 
-You should write about your dataset here, following the guidelines regarding item 1. This section may be 0.5-1 pages. Depending on your specific dataset, you may want to include subsections for the preprocessing, annotation, etc.
+% You should write about your dataset here, following the guidelines regarding item 1. This section may be 0.5-1 pages. Depending on your specific dataset, you may want to include subsections for the preprocessing, annotation, etc.
+
+The raw dataset consisted of over 1 million individual crime reports, transcribed from the original paper records. Each report included a date, time of occurrence, location, crime code, victim age, and other logistical attributes.
+
+To create a dataset suitable for the intended model, however, several restructuring steps were necessary.
+
+\subsection{Preprocessing}
+\begin{enumerate}
+    \item Normalizing all column names in the provided \texttt{.csv} file, including aligning capitalization and trimming spaces.
+    \item Dropping rows missing a time, date, or location, since these were essential identifiers.
+    \item Dropping rows with coordinates outside the latitude and longitude bounds around Los Angeles (LA) (including a buffer margin).
+\end{enumerate}
+
+\subsection{Base Transformations}
+\begin{enumerate}
+    \item Spatial aggregation: The LA area (including a buffer margin) was divided into 2 km$^2$ grid cells, with each cell treated as a single ``spatial unit.''
+    \item Temporal aggregation: Crimes were grouped by week number and year. For example, crimes occurring on Tuesday and Wednesday of the 3rd week of a year would belong to the same ``temporal unit.''
+    \item Count aggregation: The combined spatial-temporal unit (grid cell $\times$ week) was used to count the number of crimes per type.
+\end{enumerate}
+
+\subsection{Add-on Transformations}
+\begin{enumerate}
+    \item Rolling averages: For each grid cell-week unit, the rolling average of each crime type over the previous two weeks was calculated.
+\end{enumerate}
+
+After preprocessing and transformation, the final dataset consisted of grid cell-week units, each with counts for every crime type. Planned extensions include incorporating rolling averages from neighboring grids to capture local spatial trends.
 
 \section{Features}
 
