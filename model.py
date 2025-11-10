@@ -156,6 +156,7 @@ def main():
 
     # Save predictions for later visualization
     y_pred_full.to_csv("data/predicted_crime_rates.csv", index=False)
+    y_test.to_csv("data/ground_truth.csv", index=False)
     print("Predicted crime rates saved to data/predicted_crime_rates.csv")
 
     return y_pred_full, results_df

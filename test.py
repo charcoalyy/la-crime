@@ -11,8 +11,6 @@ from sklearn.impute import SimpleImputer
 file_path = "data/Crime_Data_2010_2017.csv"
 crime_df = pd.read_csv(file_path)
 
-# Inspect the first few rows
-print(crime_df.head())
 
 # ---------------------------
 # 2. Clean & preprocess data
