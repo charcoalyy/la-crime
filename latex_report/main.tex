@@ -83,7 +83,6 @@ Our approach frames the problem as a multi-label binary classification task, whe
 Here, talk about the related work you encountered for your approach. Cite at least 5 references. Refer to item 2. No one has done exactly your task? Write about the most similar thing you can find. This should be around 0.25-0.5 pages.
 
 \section{Dataset}
-
 % You should write about your dataset here, following the guidelines regarding item 1. This section may be 0.5-1 pages. Depending on your specific dataset, you may want to include subsections for the preprocessing, annotation, etc.
 
 The raw dataset consisted of over 1 million individual crime reports, transcribed from the original paper records. Each report included a date, time of occurrence, location, crime code, victim age, and other logistical attributes.
@@ -95,25 +94,32 @@ To create a dataset suitable for the intended model, however, several restructur
     \item Normalizing all column names in the provided \texttt{.csv} file, including aligning capitalization and trimming spaces.
     \item Dropping rows missing a time, date, or location, since these were essential identifiers.
     \item Dropping rows with coordinates outside the latitude and longitude bounds around Los Angeles (LA) (including a buffer margin).
+    \item Grouping similar crimes that differ only by description technicalities.
 \end{enumerate}
 
-\subsection{Base Transformations}
+\subsection{Transformations}
 \begin{enumerate}
     \item Spatial aggregation: The LA area (including a buffer margin) was divided into 2 km$^2$ grid cells, with each cell treated as a single ``spatial unit.''
     \item Temporal aggregation: Crimes were grouped by week number and year. For example, crimes occurring on Tuesday and Wednesday of the 3rd week of a year would belong to the same ``temporal unit.''
     \item Count aggregation: The combined spatial-temporal unit (grid cell $\times$ week) was used to count the number of crimes per type.
 \end{enumerate}
 
-\subsection{Add-on Transformations}
-\begin{enumerate}
-    \item Rolling averages: For each grid cell-week unit, the rolling average of each crime type over the previous two weeks was calculated.
-\end{enumerate}
-
-After preprocessing and transformation, the final dataset consisted of grid cell-week units, each with counts for every crime type. Planned extensions include incorporating rolling averages from neighboring grids to capture local spatial trends.
+After preprocessing and transformation, the final dataset consisted of grid cell-week units, each with counts for every crime type.
 
 \section{Features}
+% Describe any features you used for your model, or how your data was input to your model. Are you doing feature engineering or feature selection? Are you learning embeddings? Is it all part of one neural network? Refer to item 2. This may range from 0.25 pages to 0.5 pages.
 
-Describe any features you used for your model, or how your data was input to your model. Are you doing feature engineering or feature selection? Are you learning embeddings? Is it all part of one neural network? Refer to item 2. This may range from 0.25 pages to 0.5 pages.
+The input features for the model include the aforementioned spatial and temporal identifiers, as well as engineered inputs derived from the dataset:
+
+\begin{itemize}
+    \item Rolling averages: Per crime type, the rolling average over the previous two weeks within the same grid cell was calculated. This transformed the raw counts into a new feature that captures short-term temporal trends.
+    \item Neighbouring activity (planned): Aggregated counts from adjacent grid cells are planned to be incorporated in the future to capture local spatial correlations.
+    \item Extended rolling averages (planned): Rolling averages from four to six weeks are planned to be incorporated to capture longer-term patterns in crime.
+    \item Temporal effects (planned): Features encoding week-level seasonality, holidays, or day-of-week patterns may be included in the future, to better capture any temporal trends.
+    \item Crime interactions (planned): Features capturing correlations between different crime types (e.g., theft vs. property damage) may be included in the future.
+\end{itemize}
+
+Each input is represented as a single feature vector per unit, with multiple outputs corresponding to the counts of each crime type, allowing the model to predict multiple targets simultaneously.
 
 \section{Implementation}
 
