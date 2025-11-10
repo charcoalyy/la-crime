@@ -27,7 +27,7 @@
 \title{Group X Progress Report:\\My Group's Project Name}
 
 
-\author{First Author, Second Author, Third Author \\
+\author{Arjun Karthik, Alina Zeng, Stanley Chen \\
   \texttt{\{macid1,macid2,macid3\}@mcmaster.ca} }
 
 %\author{
@@ -75,7 +75,8 @@
 
 \section{Introduction}
 
-Here, write a brief introduction to the problem you are solving. This can be adapted from your problem description and motivation from the original proposal. This should be around 0.25-0.5 pages.
+This project aims to predict the weekly occurrence of major crime types across Los Angeles using publicly available data from the Los Angeles Police Department. Predicting crime patterns is a valuable tool for law enforcement and city planners, as it supports proactive decision-making, effective resource allocation, and early detection of emerging hot spots. The model developed in this work predicts whether a given crime type will occur in a particular region of the city during a specific week.
+Our approach frames the problem as a multi-label binary classification task, where each label represents a different crime type. By incorporating short-term historical data through rolling temporal features, we enable the model to capture recent trends in crime dynamics. The focus is on establishing a clear and explainable baseline model that accurately captures temporal dependencies while serving as a foundation for more advanced methods.
 
 \section{Related Work}
 
@@ -91,7 +92,9 @@ Describe any features you used for your model, or how your data was input to you
 
 \section{Implementation}
 
-Describe your model and implementation here. Refer to item 4. This may take around a page.
+The model was implemented as a multi-label logistic regression classifier using only NumPy and pandas. Each crime type is modeled as a separate binary logistic regression problem with its own weight vector and bias term. During training, the model learns to minimize the binary cross-entropy loss between the predicted probabilities and the true labels. The optimization is carried out using batch gradient descent with a fixed learning rate and a specified number of iterations.
+The logistic regression was trained on rolling temporal features extracted from the training data, and predictions were generated for each week in the testing set. The output probabilities were converted into binary predictions using a 0.5 threshold. Accuracy was computed individually for each crime label by comparing predicted outcomes with actual occurrences. The model’s results and learned parameters were stored for further analysis and visualization.
+This implementation offers a balance between how interpretable it is and predictive power. By avoiding reliance on high-level machine learning libraries, it provides clear insight into the mathematical foundations of logistic regression and allows the team to directly control every aspect of the training and evaluation process.
 
 \section{Results and Evaluation}
 
@@ -99,7 +102,7 @@ How are you evaluating your model? What results do you have so far? What are you
 
 \section{Feedback and Plans}
 
-Write about your plans for the remainder of the project. This should include a discussion of the feedback you received from your TA, and how you plan to improve your approach. Reflect on your implementation and areas for improvement. Refer to item 6. This may be around 0.5 pages.
+Based on the feedback received, the next stage of this project will focus on expanding the modeling approach and improving both performance and interpretability. The team plans to experiment with different machine learning models, such as Random Forests and neural networks, to compare their predictive capabilities against the current logistic regression baseline. Regularization techniques, including L1 and L2 penalties, will be explored to improve generalization and reduce overfitting. Additionally, the feature preprocessing pipeline will be revisited to test alternative grouping strategies, such as aggregating related crime categories into broader classes to capture higher-level behavioral patterns. The team also aims to develop a spatial visualization component, creating an interactive map to display predicted crime hotspots across Los Angeles. This will improve interpretability and provide an intuitive way to analyze temporal and spatial crime trends. In general, these next steps will strengthen the performance of the model and present the results in a more informative and practical manner.
 
 \section{Template Notes}
 
