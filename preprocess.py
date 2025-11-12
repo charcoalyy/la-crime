@@ -4,6 +4,14 @@ from dataclasses import dataclass
 
 # pd.set_option('display.max_columns', None)
 
+'''
+AI DISCLAIMER NOTE: 
+14 prompts used, where use cases are noted in the code below. Carbon usage for this file:
+
+14*4.32g = 60.48g CO2
+
+'''
+
 # ====== constants ======
 FILE_PATH = "Crime_Data_2010_2017.csv"
 LA_LAT_MIN, LA_LAT_MAX = 33.0, 35.0
@@ -13,6 +21,7 @@ def debug(df, msg=""):
     print(f"\nDEBUG >> {msg}")
     print(df.head(10))
 
+''' Automated manual work of creating data class, used ChatGPT assistance '''
 @dataclass(frozen=True)
 class raw_c:
     date: str = 'Date Occurred'
@@ -21,6 +30,7 @@ class raw_c:
     crime_desc: str = 'Crime Code Description'
     location: str = 'Location'
 
+''' Automated manual work of creating data class, used ChatGPT assistance '''
 @dataclass(frozen=True)
 class feat_c:
     datetime: str = 'datetime'
@@ -50,6 +60,7 @@ def clean(df):
 def process_location_col(df):
     """extract lat/lon from location string and keep only rows inside LA bounds"""
 
+    ''' Parsed lat/long string, used ChatGPT assistance '''
     lat = df[raw_c.location].str.extract(r'\(([^,]+),')[0].astype(float)
     lon = df[raw_c.location].str.extract(r', ([^)]+)\)')[0].astype(float)
 
@@ -64,6 +75,7 @@ def process_location_col(df):
 def process_datetime_col(df):
     """create combined datetime column from date and time cols"""
 
+    ''' Formatted datetime string, used ChatGPT assistance '''
     df[feat_c.datetime] = pd.to_datetime(
         df[raw_c.date] + ' ' + df[raw_c.time].astype(str).str.zfill(4),
         format='%m/%d/%Y %H%M',
@@ -79,6 +91,7 @@ def assign_grids(df, lat_step=0.013, lon_step=0.015):
 
     df[feat_c.grid_row] = ((df[feat_c.lat] - LA_LAT_MIN) // lat_step).astype(int)
     df[feat_c.grid_col] = ((df[feat_c.lon] - LA_LON_MIN) // lon_step).astype(int)
+    ''' Generated unique grid ID, used ChatGPT assistance '''
     df[feat_c.grid_id] = (
         'grid_lat' + ((df[feat_c.grid_row] * lat_step) + LA_LAT_MIN).round(3).astype(str) +
         '_lon' + ((df[feat_c.grid_col] * lon_step) + LA_LON_MIN).round(3).astype(str)
@@ -92,6 +105,7 @@ def assign_week(df):
     df[feat_c.week_number] = iso['week']
     df[feat_c.week_year] = iso['year']
     
+    ''' Extracted week start, end, and unique ID, used ChatGPT assistance '''
     df[feat_c.week_start] = pd.to_datetime(
         df[feat_c.week_year].astype(str) + '-W' + df[feat_c.week_number].astype(str) + '-1',
         format='%G-W%V-%u'
@@ -131,6 +145,7 @@ def compute_rolling_avg(aggregated, top_crimes, window=2):
     """
 
     for crime in top_crimes:
+        ''' Double-checked rolling average logic, used ChatGPT assistance '''
         aggregated[f'{crime}_rolling_{window}w'] = (
             aggregated.groupby('grid_id')[crime]
             .shift(1) # exclude current week
