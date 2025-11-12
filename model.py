@@ -2,6 +2,14 @@ import preprocess as pp
 import numpy as np
 import pandas as pd
 
+'''
+AI DISCLAIMER NOTE: 
+4 prompts which are noted in the code below, carbon usage for this file:
+
+4*4.32g = 17.28g CO2
+
+'''
+
 # ============================================================
 # 1. Split Data
 # ============================================================
@@ -40,6 +48,10 @@ def binary_cross_entropy(y, y_pred):
     y_pred = np.clip(y_pred, eps, 1 - eps)
     return -np.mean(y * np.log(y_pred) + (1 - y) * np.log(1 - y_pred))
 
+'''
+Utility function were created with support of ChatGPT, Model 5.
+'''
+
 # ============================================================
 # 3. Logistic Regression Training and Prediction
 # ============================================================
@@ -53,8 +65,10 @@ def logisticTrainingFitSingleLabel(X_train, y_train, learningRate, iterations, v
         linear_model = np.dot(X_train, weights) + bias
         y_predicted = sigmoid(linear_model)
 
-        dw = (1 / n_samples) * np.dot(X_train.T, (y_predicted - y_train))
-        db = (1 / n_samples) * np.sum(y_predicted - y_train)
+        dw = (1 / n_samples) * np.dot(X_train.T, (y_predicted - y_train)) 
+        '''Gradient weights, used ChatGPT assistance'''
+        db = (1 / n_samples) * np.sum(y_predicted - y_train) 
+        '''Gradient bias, used ChatGPT assistance'''
 
         weights -= learningRate * dw
         bias -= learningRate * db
@@ -106,9 +120,7 @@ def trainMultiLabelLogisticRegression(X_train, X_test, y_train, y_test, top_crim
     X_train_np = X_train.values
     X_test_np = X_test.values
 
-    weights, biases = logisticTrainingFitMultiLabel(
-        X_train_np, y_train[trainableLabels], learningRate=lr, iterations=n_iter, verbose=True
-    )
+    weights, biases = logisticTrainingFitMultiLabel(X_train_np, y_train[trainableLabels], learningRate=lr, iterations=n_iter, verbose=True)
 
     y_pred_proba, y_pred_binary = predictMultiLabelLogistic(X_test_np, weights, biases, threshold=0.5)
 
@@ -122,16 +134,16 @@ def trainMultiLabelLogisticRegression(X_train, X_test, y_train, y_test, top_crim
         else:
             y_pred_full[col] = 0
 
-    # Simple accuracy per label
+    ''' Simple accuracy per label, used ChatGPT assistance '''
     results = {}
     for col in top_crimes:
         y_true = y_test[col].values
         y_pred = y_pred_full[col].values
-        acc = (y_true == y_pred).mean()
+        acc = (y_true == y_pred).mean() 
         results[col] = acc
         print(f"{col:40s} Accuracy: {acc:.3f}")
 
-    return (weights, biases), pd.DataFrame.from_dict(results, orient='index', columns=['accuracy']), y_pred_full
+    return pd.DataFrame.from_dict(results, orient='index', columns=['accuracy']), y_pred_full
 
 # ============================================================
 # 5. Main Execution
@@ -145,9 +157,7 @@ def main():
     X_train, y_train, X_test, y_test = splitData(df, top_crimes)
 
     # Train and predict
-    (weights, biases), results_df, y_pred_full = trainMultiLabelLogisticRegression(
-        X_train, X_test, y_train, y_test, top_crimes, lr=0.1, n_iter=800
-    )
+    results_df, y_pred_full = trainMultiLabelLogisticRegression(X_train, X_test, y_train, y_test, top_crimes, lr=0.1, n_iter=800)
 
     # Include identifiers for reference
     y_pred_full['grid_id'] = df.loc[y_test.index, 'grid_id'].values
