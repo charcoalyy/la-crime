@@ -5,6 +5,8 @@
 \usepackage[]{acl}
 \usepackage{times}
 \usepackage{latexsym}
+\usepackage{float} 
+\usepackage{placeins}
 
 % For proper rendering and hyphenation of words containing Latin characters (including in bib files)
 \usepackage[T1]{fontenc}
@@ -137,12 +139,36 @@ This implementation offers a balance between how interpretable it is and predict
 
 \section{Results and Evaluation}
 
-The model’s performance was evaluated using standard multilabel classification metrics, including precision, recall, F1-score, and accuracy. Each crime type was treated as a separate binary classification task, and the metrics were computed individually before averaging across all labels to obtain macro-level performance. This approach ensures that each crime type contributes equally to the evaluation, regardless of how frequently it occurs.
+The model’s performance was evaluated using standard multilabel classification metrics, including precision, recall, F1-score, and accuracy. Each crime type was treated as an independent binary classification task, and metrics were computed separately before averaging across all labels to obtain macro-level results. This ensured that each crime type contributed equally to the evaluation, regardless of how often it occurred.
 
-During evaluation, the model’s predictions were compared against ground-truth labels in the testing set. The evaluation script generated a summary table showing per-label and overall scores, allowing for detailed comparison across different crime types. Crimes with more consistent patterns, such as theft and burglary, tended to show higher recall, while low-frequency crimes displayed slightly higher precision but lower recall. The F1-score provided a balanced view of performance across these trade-offs.
+During evaluation, the model’s predictions were compared against ground-truth labels in the testing set. The evaluation script produced per-label and overall scores, allowing detailed comparisons across different crime types. Crimes with more consistent temporal patterns, such as theft and burglary, generally achieved higher recall, while lower-frequency crimes displayed slightly higher precision but lower recall. The F1-score provided a balanced view of overall performance across these trade-offs.
 
-As a baseline, a simple frequency-based predictor was implemented to estimate crime occurrences based on the previous week’s averages. The logistic regression model outperformed this baseline in all major metrics, demonstrating its ability to generalize beyond recent history and identify broader temporal trends. Evaluation results were exported to \texttt{evaluation\_results.csv} for visualization and further analysis. Overall, these results establish a strong baseline and validate the effectiveness of the model’s rolling temporal features.
+To better understand spatial and statistical patterns, several visuals were generated, including a sample crime density heatmap (see Figure~\ref{fig:image1}) and a metric correlation heatmap (see Figure~\ref{fig:image2}). The crime density map highlights spatial concentrations for one selected crime category as an illustrative example rather than a complete citywide representation. These visuals help contextualize model outputs and provide insight into crime clustering and label correlations.
 
+As a baseline, a simple frequency-based predictor was used to estimate weekly crime occurrences based on the previous week’s averages. The logistic regression model outperformed this baseline across all metrics, demonstrating its ability to generalize beyond recent history and identify broader temporal trends. Evaluation results were exported to \texttt{evaluation\_results.csv} for visualization and further analysis. Overall, these results establish a strong baseline and validate the effectiveness of the model’s rolling temporal features.
+
+\FloatBarrier
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/image1.png}
+    \caption{Training and validation loss curves for model performance.}
+    \label{fig:image1}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/image2.png}
+    \caption{Comparison of model performance under different regularization techniques.}
+    \label{fig:image2}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1.3\linewidth]{images/image3.png}
+    \caption{Summary of evaluation metrics for the logistic regression model.}
+    \label{fig:image3}
+\end{figure}
+\FloatBarrier
 \section{Feedback and Plans}
 
 Based on the feedback received, the next stage of this project will focus on expanding the modeling approach and improving both performance and interpretability. The team plans to experiment with different machine learning models, such as Random Forests and neural networks, to compare their predictive capabilities against the current logistic regression baseline. Regularization techniques, including L1 and L2 penalties, will be explored to improve generalization and reduce overfitting. 
@@ -195,6 +221,7 @@ Sapna Singh Kshatri et al.
 
 Alina: defined what the training dataset would look like; programmed the sections for data preprocessing and feature engineering; wrote the report sections for dataset, features, and related work with references.
 
+Stanley: implemented the evaluation pipeline and L1/L2 experiments; wrote the Results and Evaluation section and integrated the visualizations into the report.
 % ====================================================================================================
 
 % \section{Template Notes}
