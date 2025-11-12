@@ -2,7 +2,18 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 
+'''
+AI DISCLAIMER NOTE: 
+1 prompt which is noted in the code below, carbon usage for this file:
+
+1*4.32g = 4.32g CO2
+
+'''
+
 def evaluate_multilabel(y_true, y_pred, top_crimes):
+    '''
+    ChatGPT assistance was used to calculate evaluation metrics for multilabel classification.
+    '''
     results = {}
     for label in top_crimes:
         if label in y_true.columns and label in y_pred.columns:

@@ -142,43 +142,23 @@ This implementation offers a balance between how interpretable it is and predict
 
 \section{Results and Evaluation}
 
-The model’s performance was evaluated using standard multilabel classification metrics, including precision, recall, F1-score, and accuracy. Each crime type was treated as an independent binary classification task, and metrics were computed separately before averaging across all labels to obtain macro-level results. This ensured that each crime type contributed equally to the evaluation, regardless of how often it occurred.
+The model’s performance was evaluated using standard multi-label classification metrics, including precision, recall, F1-score, and accuracy. Each crime type was treated as an independent binary classification task, and metrics were computed separately before averaging across all labels to obtain macro-level results. This ensured that each crime type contributed equally to the evaluation, regardless of how often it occurred. For the evaluation, we implemented a train test split, such that our training data consisted of data that was before or during 2015, and testing it on data from 2016-2017.
 
 During evaluation, the model’s predictions were compared against ground-truth labels in the testing set. The evaluation script produced per-label and overall scores, allowing detailed comparisons across different crime types. Crimes with more consistent temporal patterns, such as theft and burglary, generally achieved higher recall, while lower-frequency crimes displayed slightly higher precision but lower recall. The F1-score provided a balanced view of overall performance across these trade-offs.
 
-To better understand spatial and statistical patterns, several visuals were generated, including a sample crime density heatmap (see Figure~\ref{fig:image1}) and a metric correlation heatmap (see Figure~\ref{fig:image2}). The crime density map highlights spatial concentrations for one selected crime category as an illustrative example rather than a complete citywide representation. These visuals help contextualize model outputs and provide insight into crime clustering and label correlations.
+To better understand spatial and statistical patterns, several visuals were generated, including a sample crime density heatmap (see Figure~\ref{fig:image1}) and a metric correlation heatmap (see Figure~\ref{fig:image2}). The crime density map highlights spatial concentrations for one selected crime category as an illustrative example rather than a complete citywide representation. These visuals help contextualize model outputs and provide insight into crime clustering and label correlations. Please see these visuals at the end of the document after the team contributions section.
 
 As a baseline, a simple frequency-based predictor was used to estimate weekly crime occurrences based on the previous week’s averages. The logistic regression model outperformed this baseline across all metrics, demonstrating its ability to generalize beyond recent history and identify broader temporal trends. Evaluation results were exported to \texttt{evaluation\_results.csv} for visualization and further analysis. Overall, these results establish a strong baseline and validate the effectiveness of the model’s rolling temporal features.
 
-\FloatBarrier
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.9\linewidth]{images/image1.png}
-    \caption{Training and validation loss curves for model performance.}
-    \label{fig:image1}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.9\linewidth]{images/image2.png}
-    \caption{Comparison of model performance under different regularization techniques.}
-    \label{fig:image2}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=1.3\linewidth]{images/image3.png}
-    \caption{Summary of evaluation metrics for the logistic regression model.}
-    \label{fig:image3}
-\end{figure}
-\FloatBarrier
 \section{Feedback and Plans}
 
 Based on the feedback received, the next stage of this project will focus on expanding the modeling approach and improving both performance and interpretability. The team plans to experiment with different machine learning models, such as Random Forests and neural networks, to compare their predictive capabilities against the current logistic regression baseline. Regularization techniques, including L1 and L2 penalties, will be explored to improve generalization and reduce overfitting. 
 
 Additionally, the feature preprocessing pipeline will be revisited to test alternative grouping strategies, such as aggregating related crime categories into broader classes to capture higher-level behavioral patterns. The team also aims to develop a spatial visualization component, creating an interactive map to display predicted crime hotspots across Los Angeles. This will improve interpretability and provide an intuitive way to analyze temporal and spatial crime trends. In general, these next steps will strengthen the performance of the model and present the results in a more informative and practical manner.
 
-\section{References}
+\vspace{1em}
+
+%\section{References}
 % Many websites where you can find academic papers also allow you to export a bib file for citation or bib formatted entry. Copy this into the \texttt{custom.bib} and you will be able to cite the paper in the \LaTeX{}. You can remove the example entries.
 
 \renewcommand{\refname}{}
@@ -226,8 +206,36 @@ Sapna Singh Kshatri et al.
 
 \textbf{Arjun:} Wrote the following sections of the report: introduction, model implementation, and feedback from the teaching assistant. Went to tutorial to gain feedback, programmed the main model section in the model.py file. 
 
-Stanley: implemented the evaluation pipeline and L1/L2 experiments; wrote the Results and Evaluation section and integrated the visualizations into the report.
-% ====================================================================================================
+\textbf{Stanley:} Implemented the evaluation pipeline and data visualization heatmaps; wrote the Results and Evaluation section and integrated the visualizations into the report.
+% 
+
+\FloatBarrier
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/image1.png}
+    \caption{Precision, recall, F1-score, and accuracy across different crime categories in Los Angeles.}
+    \label{fig:image1}
+\end{figure*}
+
+\begin{figure*}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{images/image2.png}
+    \caption{Heatmap showing the geographic distribution and density of “Assault with a Deadly Weapon, Aggravated Assault” incidents in Los Angeles. Higher density areas (in red) indicate crime hotspots concentrated in specific city regions.}
+    \label{fig:image2}
+\end{figure*}
+
+\begin{figure*}[t]
+    \centering
+    \vspace*{-2em} % optional: pulls image closer to the top margin
+    \includegraphics[width=\textwidth, height=0.5\textheight, keepaspectratio]{images/image3.png}
+    \caption{Summary of evaluation metrics for the logistic regression model.}
+    \label{fig:image3}
+    \vspace*{-1em} % optional: reduce space after figure
+\end{figure*}
+
+\FloatBarrier
+
+====================================================================================================
 
 % \section{Template Notes}
 
