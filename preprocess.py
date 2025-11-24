@@ -181,9 +181,7 @@ def aggregate_crimes_per_unit(df, top_crimes):
     return aggregated
 
 def compute_rolling_avg(aggregated, top_crimes, window=2):
-    """
-    compute rolling average of previous 'window' weeks per grid
-    """
+    """compute rolling average of previous 'window' weeks per grid"""
 
     for crime in top_crimes:
         ''' AI: Double-checked rolling average logic using ChatGPT assistance '''
@@ -199,9 +197,7 @@ def compute_rolling_avg(aggregated, top_crimes, window=2):
     return aggregated
 
 def compute_season(df):
-    """
-    add "season" feature derived from week_number & week_year in aggregated dataframe
-    """
+    """add "season" feature derived from week_number & week_year in aggregated dataframe"""
 
     def assign_season(month):
         if month in [12, 1, 2]:
@@ -220,6 +216,41 @@ def compute_season(df):
     df['season'] = week_start.dt.month.apply(assign_season)
     return df
 
+# ## WARNING: does not work yet
+# def compute_neighbour_sum(df, top_crimes):
+#     """aggregate counts of neighbours (3x3 grid) for each grid-week"""
+
+#     df['grid_row'] = df['grid_id'].str.extract(r'grid_lat([0-9.]+)')[0].astype(float)
+#     df['grid_col'] = df['grid_id'].str.extract(r'_lon([0-9.]+)')[0].astype(float)
+
+#     df_lookup = df.set_index(['week_year', 'week_number', 'grid_row', 'grid_col']).sort_index()
+
+#     for crime in top_crimes:
+#         neighbour_col = f'{crime}_neighbour_sum'
+#         df[neighbour_col] = 0.0  # float to handle 0.5 values
+
+#     for idx, row in df.iterrows():
+#         week_key = (row['week_year'], row['week_number'])
+#         r, c = row['grid_row'], row['grid_col']
+
+#         # 8-neighbour coordinates
+#         neighbours = [(r + dr, c + dc) for dr in [-1,0,1] for dc in [-1,0,1] if not (dr==0 and dc==0)]
+
+#         for crime in top_crimes:
+#             neigh_sum = 0.0
+#             for nr, nc in neighbours:
+#                 try:
+#                     neigh_val = df_lookup.loc[(week_key[0], week_key[1], nr, nc), crime]
+#                     if isinstance(neigh_val, pd.Series):
+#                         neigh_val = float(neigh_val.iloc[0])
+#                     neigh_sum += neigh_val
+#                 except KeyError:
+#                     continue
+#             df.at[idx, f'{crime}_neighbour_sum'] = neigh_sum
+
+#     df = df.drop(columns=['grid_row','grid_col'])
+#     return df
+
 # ====== execution ======
 data = pd.read_csv(f"data_raw/{FILE_PATH}")
 
@@ -236,6 +267,7 @@ top_crimes = data[raw_c.crime_desc].value_counts().nlargest(20).index.tolist()
 
 data = aggregate_crimes_per_unit(data, top_crimes)
 data = compute_rolling_avg(data, top_crimes)
+# data = compute_neighbour_sum(data, top_crimes)
 
 data = compute_season(data)
 
