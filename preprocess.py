@@ -198,6 +198,28 @@ def compute_rolling_avg(aggregated, top_crimes, window=2):
 
     return aggregated
 
+def compute_season(df):
+    """
+    add "season" feature derived from week_number & week_year in aggregated dataframe
+    """
+
+    def assign_season(month):
+        if month in [12, 1, 2]:
+            return 'winter'
+        elif month in [3, 4, 5]:
+            return 'spring'
+        elif month in [6, 7, 8]:
+            return 'summer'
+        else:
+            return 'fall'
+        
+    ''' AI: Reconstruct season using ChatGPT assistance '''
+    week_start = pd.to_datetime(df['week_year'].astype(str) + '-W' + df['week_number'].astype(str) + '-1',
+                                format='%G-W%V-%u')
+    
+    df['season'] = week_start.dt.month.apply(assign_season)
+    return df
+
 # ====== execution ======
 data = pd.read_csv(f"data_raw/{FILE_PATH}")
 
@@ -214,5 +236,7 @@ top_crimes = data[raw_c.crime_desc].value_counts().nlargest(20).index.tolist()
 
 data = aggregate_crimes_per_unit(data, top_crimes)
 data = compute_rolling_avg(data, top_crimes)
+
+data = compute_season(data)
 
 debug_df(data, "RESULT")
