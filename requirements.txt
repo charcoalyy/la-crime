@@ -4,3 +4,6 @@ scikit-learn
 
 matplotlib
 seaborn
+
+sentence_transformers
+holidays
