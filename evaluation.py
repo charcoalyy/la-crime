@@ -4,11 +4,25 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 
 '''
 AI DISCLAIMER NOTE: 
-1 prompt which is noted in the code below, carbon usage for this file:
+5 prompt which is noted in the code below, carbon usage for this file:
 
-1*4.32g = 4.32g CO2
+5*4.32g = 21.6g CO2
 
 '''
+
+# ============================
+# Helper functions
+# ============================
+
+def load_data():
+    y_true = pd.read_csv("data/ground_truth.csv")
+    y_pred = pd.read_csv("data/predicted_crime_rates.csv")
+    top_crimes = [c for c in y_true.columns if c not in ['grid_id', 'week_year', 'week_number']]
+    return y_true, y_pred, top_crimes
+
+# ============================
+# Error analysis functions
+# ============================
 
 def evaluate_multilabel(y_true, y_pred, top_crimes):
     '''
@@ -54,6 +68,7 @@ def cooccurrence_errors(y_true, y_pred, labels):
     
     errors = (y_true[labels] != y_pred[labels]).astype(int)
     co_error_matrix = errors.T.dot(errors)
+    np.fill_diagonal(co_error_matrix.values, 0)
     return co_error_matrix
 
 def high_error_samples(y_true, y_pred, labels, top_n=20):
@@ -64,11 +79,9 @@ def high_error_samples(y_true, y_pred, labels, top_n=20):
     high_err_df = errors.sort_values('num_errors', ascending=False).head(top_n)
     return high_err_df
 
-def load_data():
-    y_true = pd.read_csv("data/ground_truth.csv")
-    y_pred = pd.read_csv("data/predicted_crime_rates.csv")
-    top_crimes = [c for c in y_true.columns if c not in ['grid_id', 'week_year', 'week_number']]
-    return y_true, y_pred, top_crimes
+# ============================
+# Main
+# ============================
 
 def main():
     y_true, y_pred, top_crimes = load_data()
