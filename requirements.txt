@@ -6,3 +6,4 @@ matplotlib
 seaborn
 
 sentence_transformers
+holidays

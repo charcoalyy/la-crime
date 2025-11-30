@@ -1,8 +1,7 @@
-import numpy as np
-import pandas as pd
 from dataclasses import dataclass
+import holidays
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 
@@ -10,20 +9,21 @@ pd.set_option('display.max_columns', None)
 
 '''
 AI DISCLAIMER NOTE: 
-19 prompts used, where use cases are noted in the code below. Carbon usage for this file:
+26 prompts used, where use cases are noted in the code below. Carbon usage for this file:
 
-19*4.32g = ____g CO2
+26*4.32g = ____g CO2
 
 '''
+
+# ====== helpers ======
+def debug_df(df, msg=""):
+    print(f"\nDEBUG >> {msg}")
+    print(df.head(10))
 
 # ====== constants ======
 FILE_PATH = "Crime_Data_2010_2017.csv"
 LA_LAT_MIN, LA_LAT_MAX = 33.0, 35.0
 LA_LON_MIN, LA_LON_MAX = -119.5, -117.0
-
-def debug_df(df, msg=""):
-    print(f"\nDEBUG >> {msg}")
-    print(df.head(10))
 
 ''' AI: Automated manual work of creating data class using ChatGPT assistance '''
 @dataclass(frozen=True)
@@ -47,9 +47,6 @@ class feat_c:
 
     week_number: str = 'week_number'
     week_year: str = 'week_year'
-    week_start: str = 'week_start'
-    week_end: str = 'week_end'
-    week_id: str = 'week_id'
 
 # ====== cleaning ======
 def clean_raw(df):
@@ -132,31 +129,25 @@ def assign_grids(df, lat_step=0.013, lon_step=0.015):
 
     df[feat_c.grid_row] = ((df[feat_c.lat] - LA_LAT_MIN) // lat_step).astype(int)
     df[feat_c.grid_col] = ((df[feat_c.lon] - LA_LON_MIN) // lon_step).astype(int)
+
     ''' AI: Generated unique grid ID using ChatGPT assistance '''
     df[feat_c.grid_id] = (
         'grid_lat' + ((df[feat_c.grid_row] * lat_step) + LA_LAT_MIN).round(3).astype(str) +
         '_lon' + ((df[feat_c.grid_col] * lon_step) + LA_LON_MIN).round(3).astype(str)
     )
+
     return df
 
 def assign_week(df):
-    """assign iso week number, iso year, and readable week id (monday to sunday)"""
+    """assign iso week number, iso year, start date (monday to sunday)"""
 
     iso = df[feat_c.datetime].dt.isocalendar()
     df[feat_c.week_number] = iso['week']
     df[feat_c.week_year] = iso['year']
     
-    ''' AI: Extracted week start, end, and unique ID using ChatGPT assistance '''
-    df[feat_c.week_start] = pd.to_datetime(
-        df[feat_c.week_year].astype(str) + '-W' + df[feat_c.week_number].astype(str) + '-1',
-        format='%G-W%V-%u'
-    )
-    df[feat_c.week_end] = df[feat_c.week_start] + pd.Timedelta(days=6)
-    df[feat_c.week_id] = df[feat_c.week_start].dt.strftime('%Y-%m-%d') + '/' + df[feat_c.week_end].dt.strftime('%Y-%m-%d')
-    
     return df
 
-# ====== augmentation ======
+# ====== augmentation (crime-related features) ======
 def aggregate_crimes_per_unit(df, top_crimes):
     """
     aggregate crime counts per spatio-temporal unit
@@ -171,12 +162,13 @@ def aggregate_crimes_per_unit(df, top_crimes):
     crime_dummies = crime_dummies.reindex(columns=top_crimes, fill_value=0)
     df = df.join(crime_dummies)
 
-    # aggregate counts per grid_id x week_year x week_number
-    group_cols = ['grid_id', 'week_year', 'week_number']
+    # aggregate counts per grid_row x grid_col x week_year x week_number
+    # grid_id maintained for mapping simplicity later on
+    group_cols = ['grid_id', 'grid_row', 'grid_col', 'week_year', 'week_number']
     aggregated = df.groupby(group_cols)[crime_dummies.columns].sum().reset_index()
 
     # sort for consistency
-    aggregated = aggregated.sort_values(['grid_id', 'week_year', 'week_number'])
+    aggregated = aggregated.sort_values(['grid_id', 'grid_row', 'grid_col', 'week_year', 'week_number'])
     
     return aggregated
 
@@ -186,7 +178,8 @@ def compute_rolling_avg(aggregated, top_crimes, window=2):
     for crime in top_crimes:
         ''' AI: Double-checked rolling average logic using ChatGPT assistance '''
         aggregated[f'{crime}_rolling_{window}w'] = (
-            aggregated.groupby('grid_id')[crime]
+            aggregated
+            .groupby(['grid_row', 'grid_col'])[crime]
             .shift(1) # exclude current week
             .rolling(window, min_periods=1) # rolling window of previous weeks
             .mean()
@@ -196,10 +189,56 @@ def compute_rolling_avg(aggregated, top_crimes, window=2):
 
     return aggregated
 
-def compute_season(df):
-    """add "season" feature derived from week_number & week_year in aggregated dataframe"""
+def compute_neighbour_score(df, top_crimes, weight_inner=1.0, weight_middle=0.5, weight_outer=0.25):
+    """
+    compute distance-weighted neighbour crime activity score
+    based on a 5x5 grid window around each grid cell.
+    """
 
-    def assign_season(month):
+    # sum total crimes per unit
+    df['total_crimes'] = df[top_crimes].sum(axis=1)
+
+    ''' AI: Determined how to get faster lookup using ChatGPT assistance '''
+    lookup = df.set_index(['week_year','week_number','grid_row','grid_col'])['total_crimes']
+
+    ''' AI: Acquired offset of 5x5 area around center cell using ChatGPT assistance '''
+    offsets = [(dr, dc) for dr in range(-2, 3) for dc in range(-2, 3)
+               if not (dr == 0 and dc == 0)]
+    
+    # count neighbour crimes (weighted) to derive score
+    df['neigh_activity_score'] = 0.0
+
+    for idx, row in df.iterrows():
+        wy, wn = row['week_year'], row['week_number']
+        r, c = row['grid_row'], row['grid_col']
+
+        score = 0.0
+
+        for dr, dc in offsets:
+            nr, nc = r + dr, c + dc
+            dist = abs(dr) + abs(dc)
+
+            if dist == 1:
+                w = weight_inner
+            elif dist == 2:
+                w = weight_middle
+            else:
+                w = weight_outer
+
+            neigh_val = lookup.get((wy, wn, nr, nc), 0)
+            score += w * neigh_val
+
+        df.at[idx, 'neigh_activity_score'] = score
+
+    return df.drop(columns=['grid_row','grid_col'])
+
+# ====== augmentation (non-crime-related features) ======
+def compute_season(df):
+    def assign_season(row):
+        ''' AI: Reconstructed week dates using ChatGPT assistance '''
+        week_start = pd.to_datetime(f'{int(row.week_year)}-W{int(row.week_number):02d}-1', format='%G-W%V-%u')
+        month = week_start.month
+
         if month in [12, 1, 2]:
             return 'winter'
         elif month in [3, 4, 5]:
@@ -208,48 +247,25 @@ def compute_season(df):
             return 'summer'
         else:
             return 'fall'
-        
-    ''' AI: Reconstruct season using ChatGPT assistance '''
-    week_start = pd.to_datetime(df['week_year'].astype(str) + '-W' + df['week_number'].astype(str) + '-1',
-                                format='%G-W%V-%u')
-    
-    df['season'] = week_start.dt.month.apply(assign_season)
+
+    df['season'] = df.apply(assign_season, axis=1)
     return df
 
-# ## WARNING: does not work yet
-# def compute_neighbour_sum(df, top_crimes):
-#     """aggregate counts of neighbours (3x3 grid) for each grid-week"""
+def compute_is_holiday(df):
+    us_holidays = holidays.US(years=df['week_year'].unique())
 
-#     df['grid_row'] = df['grid_id'].str.extract(r'grid_lat([0-9.]+)')[0].astype(float)
-#     df['grid_col'] = df['grid_id'].str.extract(r'_lon([0-9.]+)')[0].astype(float)
+    def assign_holiday(row):
+        ''' AI: Reconstructed week dates using ChatGPT assistance '''
+        week_start = pd.to_datetime(f'{int(row.week_year)}-W{int(row.week_number):02d}-1', format='%G-W%V-%u')
+        week_end = week_start + pd.Timedelta(days=6)
 
-#     df_lookup = df.set_index(['week_year', 'week_number', 'grid_row', 'grid_col']).sort_index()
+        for date in pd.date_range(week_start, week_end):
+            if date in us_holidays:
+                return 1
+        return 0
 
-#     for crime in top_crimes:
-#         neighbour_col = f'{crime}_neighbour_sum'
-#         df[neighbour_col] = 0.0  # float to handle 0.5 values
-
-#     for idx, row in df.iterrows():
-#         week_key = (row['week_year'], row['week_number'])
-#         r, c = row['grid_row'], row['grid_col']
-
-#         # 8-neighbour coordinates
-#         neighbours = [(r + dr, c + dc) for dr in [-1,0,1] for dc in [-1,0,1] if not (dr==0 and dc==0)]
-
-#         for crime in top_crimes:
-#             neigh_sum = 0.0
-#             for nr, nc in neighbours:
-#                 try:
-#                     neigh_val = df_lookup.loc[(week_key[0], week_key[1], nr, nc), crime]
-#                     if isinstance(neigh_val, pd.Series):
-#                         neigh_val = float(neigh_val.iloc[0])
-#                     neigh_sum += neigh_val
-#                 except KeyError:
-#                     continue
-#             df.at[idx, f'{crime}_neighbour_sum'] = neigh_sum
-
-#     df = df.drop(columns=['grid_row','grid_col'])
-#     return df
+    df['is_holiday'] = df.apply(assign_holiday, axis=1)
+    return df
 
 # ====== execution ======
 data = pd.read_csv(f"data_raw/{FILE_PATH}")
@@ -259,7 +275,6 @@ data = simplify_classes(data)
 
 data = process_location_col(data)
 data = process_datetime_col(data)
-
 data = assign_grids(data)
 data = assign_week(data)
 
@@ -267,8 +282,9 @@ top_crimes = data[raw_c.crime_desc].value_counts().nlargest(20).index.tolist()
 
 data = aggregate_crimes_per_unit(data, top_crimes)
 data = compute_rolling_avg(data, top_crimes)
-# data = compute_neighbour_sum(data, top_crimes)
+data = compute_neighbour_score(data, top_crimes)
 
 data = compute_season(data)
+data = compute_is_holiday(data)
 
 debug_df(data, "RESULT")
