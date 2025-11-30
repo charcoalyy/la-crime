@@ -11,7 +11,7 @@ pd.set_option('display.max_columns', None)
 AI DISCLAIMER NOTE: 
 26 prompts used, where use cases are noted in the code below. Carbon usage for this file:
 
-26*4.32g = ____g CO2
+26*4.32g = 112.32g CO2
 
 '''
 
