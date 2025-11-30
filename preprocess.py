@@ -15,12 +15,16 @@ AI DISCLAIMER NOTE:
 
 '''
 
-# ====== helpers ======
+# ============================
+# Helper functions
+# ============================
 def debug_df(df, msg=""):
     print(f"\nDEBUG >> {msg}")
     print(df.head(10))
 
-# ====== constants ======
+# ============================
+# Constants
+# ============================
 FILE_PATH = "Crime_Data_2010_2017.csv"
 LA_LAT_MIN, LA_LAT_MAX = 33.0, 35.0
 LA_LON_MIN, LA_LON_MAX = -119.5, -117.0
@@ -48,7 +52,9 @@ class feat_c:
     week_number: str = 'week_number'
     week_year: str = 'week_year'
 
-# ====== cleaning ======
+# ============================
+# Cleaner functions
+# ============================
 def clean_raw(df):
     """trim spaces from col names, keep only relevant cols, drop incomplete rows"""
 
@@ -94,7 +100,9 @@ def simplify_classes(df, n_clusters=36):
 
     return df
 
-# ====== preprocessing ======
+# ============================
+# Preprocessing functions
+# ============================
 def process_location_col(df):
     """extract lat/lon from location string and keep only rows inside LA bounds"""
 
@@ -147,7 +155,9 @@ def assign_week(df):
     
     return df
 
-# ====== augmentation (crime-related features) ======
+# ============================
+# Augmentation functions for crime-related features
+# ============================
 def aggregate_crimes_per_unit(df, top_crimes):
     """
     aggregate crime counts per spatio-temporal unit
@@ -232,7 +242,9 @@ def compute_neighbour_score(df, top_crimes, weight_inner=1.0, weight_middle=0.5,
 
     return df.drop(columns=['grid_row','grid_col'])
 
-# ====== augmentation (non-crime-related features) ======
+# ============================
+# Augmentation functions for NON-crime-related features
+# ============================
 def compute_season(df):
     def assign_season(row):
         ''' AI: Reconstructed week dates using ChatGPT assistance '''
@@ -267,7 +279,9 @@ def compute_is_holiday(df):
     df['is_holiday'] = df.apply(assign_holiday, axis=1)
     return df
 
-# ====== execution ======
+# ============================
+# Execution
+# ============================
 data = pd.read_csv(f"data_raw/{FILE_PATH}")
 
 data = clean_raw(data)
