@@ -76,22 +76,22 @@ def main():
 
     print("\n========== Evaluation Metrics ==========\n")
     print(results_df.round(3))
-    results_df.to_csv("data/csv_outputs/evaluation_metrics.csv", index=True)
+    results_df.to_csv("data/error_analysis/evaluation_metrics.csv", index=True)
 
     print("\n========== Confusion Matrices ==========\n")
     conf_df = confusion_matrices(y_true, y_pred, top_crimes)
     print(conf_df)
-    conf_df.to_csv("data/csv_outputs/confusion_matrices.csv", index=True)
+    conf_df.to_csv("data/error_analysis/confusion_matrices.csv", index=True)
 
     print("\n========== Co-occurrence Errors ==========\n")
     co_errors_df = cooccurrence_errors(y_true, y_pred, top_crimes)
     print(co_errors_df)
-    co_errors_df.to_csv("data/csv_outputs/cooccurrence_errors.csv", index=True)
+    co_errors_df.to_csv("data/error_analysis/cooccurrence_errors.csv", index=True)
 
     print("\n========== High Error Samples ==========\n")
     high_err_df = high_error_samples(y_true, y_pred, top_crimes)
     print(high_err_df)
-    high_err_df.to_csv("data/csv_outputs/high_error_samples.csv", index=True)
+    high_err_df.to_csv("data/error_analysis/high_error_samples.csv", index=True)
 
 if __name__ == "__main__":
     main()
