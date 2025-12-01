@@ -97,11 +97,41 @@ No representation learning methods were used; all features were manually enginee
 % Explain deviations from plan and why.
 
 \section{Error Analysis}
-% (20%) Error Analysis
-% Systematically analyze model errors.
-% Include figures, confusion matrices, qualitative samples, etc.
-% Identify patterns in good/bad performance.
-% Suggest specific improvements for future work.
+
+To analyze model errors, we performed per-label metric calculation, confusion matrices, co-occurrence error analysis, and inspection of high-error samples. A clear and consistent pattern observed is that rarer crimes with distinctive patterns tend to be predicted more reliably, while common crimes with variable patterns are much harder to capture.
+
+\subsection{Per-label Metrics}
+For each crime type, precision, recall, F1 score, and accuracy were calculated, demonstrating high variability across labels when plotted (Figure 1). Low precision (e.g., burglary) shows the model frequently predicts that label incorrectly; low recall means it  fails to detect real cases of that crime; low F1 reflects poor overall performance on that label. Crimes with more consistent patterns (e.g., stalking, discharge firearms) have higher precision, recall, and F1, indicating the model can identify them more reliably. 
+
+These metrcs highlight an issue of class imbalance, which means measures of accuracy may not represent model quality. Potential improvements would involve more sophisticated class weighting, oversampling to balance training, or considering multi-stage models.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio]{data/error_analysis/plots/evaluation_metrics.png}
+    \caption{Evaluation metrics per class.}
+\end{figure}
+
+\subsection{Confusion Matrices}
+The confusion matrices (Figure 2) show that the model overwhelmingly predicts the absence of crimes. We see very high true negative rates across most labels, especially for rare crimes like stalking or child annoying. On the other hand, true positives are low or nearly zero for most classes, indicating the model rarely predicts that a crime occurs. False negatives are seen in the high-frequency crimes, such as burglary and petty theft, meaning the model misses actual occurrences. Some mid-frequency crimes, like burglary from vehicle or vehicle stolen, show a mix of false positives and true positives.
+
+These matrices communicate the model is conservative, accurately detecting absence but failing to identify most actual crime events due to sparsity. Potential improvements would involve using new data sources to incorporate more contextual spatial features, tuning thresholds per crime type, and exploring temporal sequence models.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio]{data/error_analysis/plots/confusion_matrices.png}
+    \caption{Confusion matrices per class.}
+\end{figure}
+
+\subsection{Co-occurrence Errors}
+The co-occurrence matrix (Figure 3) shows how often pairs of crimes are mispredicted together in the same temporal-spatial unit. Noticeably high counts between frequent, related crimes (e.g., burglary, petty theft, simple assault) show that when the model fails, it will mispredict multiple common crimes simultaneously. Rare crimes (e.g., stalking) have low co-occurrence counts with other labels, which is in line with the model's tendency to predict absences. 
+
+This matrix shows errors are not independent; the model will systematically mispredict multiple crimes during weeks of elevated occurrences. We can see this concept reflected in select high-error samples, where there are 5 rows for which all classes are incorrectly predicted. Potential improvements would involve taking approaches to explicitly model correlations between crime types to reduce correlated mispredictions.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio]{data/error_analysis/plots/cooccurrence_errors.png}
+    \caption{Co-occurrence errors between classes.}
+\end{figure}
 
 \section*{Team Contributions}
 % (5%) Team Contributions
