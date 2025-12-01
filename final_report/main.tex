@@ -13,6 +13,7 @@
 \usepackage{microtype}
 \usepackage{inconsolata}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 % Add-ons
 \usepackage{url}
@@ -86,12 +87,89 @@ No representation learning methods were used; all features were manually enginee
 % =====================================================================================
 
 \section{Implementation}
-% (20%) Implementation
-% Describe all model versions used.
-% Include simple baseline (e.g., majority vote) and trained baselines.
-% Explain loss function, optimization technique.
-% Include ablations if model has many parts.
-% If model underperformed a baseline, explain why.
+
+This section describes the full set of models implemented for the project, including a simple baseline, our original logistic regression model, and the updated improved model incorporating regularization and class imbalance correction. For each model, we outline the design choices, loss function, optimization procedure, and provide justification based on performance.
+
+\subsection{Majority Class Baseline}
+
+The simplest baseline implemented was a \textbf{majority class predictor} for each crime category. For every label, the training set proportion of positive and negative instances was computed, and the baseline always predicted the majority class for all test samples. Formally, for each crime label $y \in \{0,1\}$, the prediction is
+\[
+\hat{y} = 
+\begin{cases}
+1, & \text{if } \frac{1}{N}\sum_{i=1}^N y_i > 0.5 \\
+0, & \text{otherwise}.
+\end{cases}
+\]
+No model is trained, no features are used, and no probabilities are computed; predictions are purely frequency-driven.
+
+Although extremely simple, this baseline is essential due to the high class imbalance present in crime data. Several crimes occur in fewer than 5\% of the observed weeks, meaning a naive ``always zero'' model can achieve deceptively high accuracy. Including this baseline provides a reference point: any trained model should outperform it in meaningful metrics such as recall or F1-score.  
+
+This baseline also ensured that downstream evaluation retained identical data formatting and label structure as the trained models.
+
+\subsection{Original Logistic Regression Model}
+
+The first trained model implemented was a \textbf{multi-label logistic regression classifier} trained independently for each crime category. Each crime label was treated as a separate binary classification problem. Features consisted of two-week rolling averages for the top crime types. The model uses the standard logistic function:
+\[
+\hat{y} = \sigma(\mathbf{w}^\top \mathbf{x} + b),
+\quad
+\sigma(z) = \frac{1}{1 + e^{-z}}.
+\]
+
+\paragraph{Loss Function.}
+For each label, the model minimized binary cross-entropy:
+\[
+\mathcal{L} = -\frac{1}{N}\sum_{i=1}^N \left[
+y_i \log \hat{y}_i + (1-y_i)\log (1-\hat{y}_i)
+\right].
+\]
+
+\paragraph{Optimization.}
+Optimization was performed using batch gradient descent with a fixed learning rate. No regularization was applied, and all features contributed equally to the loss. Labels with only a single unique value (all zeros or all ones) were excluded from training and were predicted as constants during evaluation.
+
+This original version served as a strong but unregularized baseline. Its limitations became apparent in highly imbalanced categories: the model tended to predict the negative class overwhelmingly and occasionally exhibited signs of overfitting due to the absence of penalty terms.
+
+\subsection{Improved Logistic Regression Model with Regularization}
+
+The final model introduced several improvements intended to address imbalance, overfitting, and decision threshold calibration. The same multi-label logistic regression structure was retained, but with the following additions:
+
+\paragraph{L1 and L2 Regularization.}
+The loss function was augmented with both L1 and L2 penalties:
+\[
+\mathcal{L}_{\mathrm{reg}} = \mathcal{L}_{\mathrm{BCE}} 
++ \lambda_{1} \sum_{j=1}^{d} |w_j|
++ \lambda_{2} \sum_{j=1}^{d} w_j^{2}
+\]
+
+L1 promotes sparsity and implicit feature selection, while L2 stabilizes the optimization trajectory and reduces variance.
+
+\paragraph{Class-Weighted Loss.}
+To correct for severe class imbalance, positive examples were reweighted according to the ratio
+\[
+w_{\text{pos}} = \frac{N_{\text{neg}}}{N_{\text{pos}}}.
+\]
+This forces the optimizer to pay proportionally more attention to rare positive events.
+
+\paragraph{Threshold Calibration.}
+Instead of a fixed 0.5 decision threshold, each crime label’s threshold was set based on its empirical prevalence in the training set:
+\[
+\theta = \max(0.05,\; \mathbb{E}[y]).
+\]
+This improves recall for low-frequency crimes while constraining false positives.
+
+\paragraph{Optimization.}
+Training again used gradient descent, with the gradients modified to incorporate regularization and per-sample class weights. The model converged more smoothly and showed improved generalization compared to the unregularized version.
+
+\subsection{Model Comparison}
+
+The improved model consistently outperformed the original logistic regression on most crime categories, particularly those with rare positive instances. Ablations demonstrated that:
+\begin{itemize}
+    \item L1/L2 regularization reduced overfitting and improved test accuracy.
+    \item Class weighting was essential for preventing the model from collapsing into a majority-class predictor.
+    \item Threshold tuning increased recall on low-prevalence crimes without substantially harming precision.
+\end{itemize}
+
+In rare cases where the original model matched or exceeded performance on specific labels, this was typically because the label was nearly always zero, making the majority class trivial to predict. In these scenarios, the majority baseline itself performed competitively, highlighting that accuracy alone is not a sufficient evaluation metric for imbalanced data.
+
 
 % =====================================================================================
 
@@ -160,7 +238,7 @@ This matrix shows errors are not independent; the model will systematically misp
 
 \begin{itemize}
     \item Alina: Defined what the training dataset would look like; programmed refinements for data preprocessing and feature engineering; programmed new error analysis methods; wrote the report sections for updated introduction, updated dataset, updated features, progress, and error analysis.
-    \item Arjun: Sample text.
+    \item Arjun: Updated the model to include L1/L2 regularization along with adding class weighting and threshold tuning. Added the baseline model that does a majority class predictor to act as a baseline against which our later models were compared. Wrote the report section for the updated implementation. 
     \item Stanley: Sample text.
 \end{itemize}
 
