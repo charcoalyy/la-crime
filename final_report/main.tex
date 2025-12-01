@@ -72,8 +72,8 @@ The input features for the model include the aforementioned spatial and temporal
 
 \subsection{Augmentations}
 \begin{itemize}
-    \item Rolling averages: Per crime type, the rolling average over the previous two weeks within the same grid cell was calculated. \textit{Rationale:} Crime can exhibit short-term "inertia", where activity in recent weeks influences upcoming activity. Including rolling averages as a new feature helps the model capture these temporal dependencies more effectively than raw counts alone.
-    \item Neighbour activity scores: A distance-weighted score summarizing crime activity in surrounding grid cells, computed using a 5\,$\times$\,5 spatial window. \textit{Rationale:} Crime can exhibit spatial "spillover", meaning events in one area can influence nearby areas. Aggregating nearby activity encodes this spatial correlation directly into the model.
+    \item Rolling averages: Per crime type, the rolling average over the previous two weeks within the same grid cell was calculated. \textit{Rationale:} Crime can exhibit short-term "inertia", where activity in recent weeks influences upcoming activity [7]. Including rolling averages as a new feature helps the model capture these temporal dependencies more effectively than raw counts alone.
+    \item Neighbour activity scores: A distance-weighted score summarizing crime activity in surrounding grid cells, computed using a 5\,$\times$\,5 spatial window. \textit{Rationale:} Crime can exhibit spatial "spillover", meaning events in one area can influence nearby areas [8]. Aggregating nearby activity encodes this spatial correlation directly into the model.
     \item Temporal effects: Week-of-year encodings and holiday-related features were added using simple Python utilities and manual calculations. \textit{Rationale:} Crime types can vary seasonally (e.g., holidays, weather patterns, academic calendars). Encoding seasonal and calendar-driven effects helps the model learn these periodic fluctuations.
 \end{itemize}
 
@@ -159,7 +159,7 @@ This matrix shows errors are not independent; the model will systematically misp
 % Describe concrete contributions; do not write "all contributed equally".
 
 \begin{itemize}
-    \item Alina: Sample text.
+    \item Alina: Defined what the training dataset would look like; programmed refinements for data preprocessing and feature engineering; programmed new error analysis methods; wrote the report sections for updated introduction, updated dataset, updated features, progress, and error analysis.
     \item Arjun: Sample text.
     \item Stanley: Sample text.
 \end{itemize}
@@ -171,14 +171,54 @@ This matrix shows errors are not independent; the model will systematically misp
 \vspace{-3em}
 
 \begin{thebibliography}{9}
-% Fill in your references here.
 
-\bibitem{FakeBibItem}
-My template citation.
+\bibitem{JusticeGC2002}
+Department of Justice Canada.
+\newblock Research Report: Crime Severity Index and Crime Trends.
+\newblock 2002.
+\newblock \url{https://www.justice.gc.ca/eng/rp-pr/csj-sjc/jsp-sjp/rr02_7/p6.html}.
 
-% TODO: 
-% 1 - https://www.justice.gc.ca/eng/rp-pr/csj-sjc/jsp-sjp/rr02_7/p6.html
-% 2 - the same citations onward here as og progress report
+\bibitem{Ibrahim2024}
+Abdulladeef Abubakar Ibrahim, Yusuf Musa Malgwi, Yahaya Ali.
+\newblock A Hybrid Machine Learning Model for Crime Rate Prediction.
+\newblock \emph{FUDMA Journal of Sciences}, 8(6):101--106, 2024.
+\newblock \url{https://fjs.fudutsinma.edu.ng/index.php/fjs/article/view/2789}.
+
+\bibitem{LadhaPatyal2023}
+Priyanshu Ladha, Nitya Patyal.
+\newblock Crime Rate Prediction Using Machine Learning.
+\newblock In \emph{Advancements in Communication and Systems}, pages 359--368, 2023.
+\newblock \url{https://www.academia.edu/129180374/Crime_Rate_Prediction_using_Machine_Learning}.
+
+\bibitem{Walczak2021}
+Bartłomiej Walczak.
+\newblock Predicting crime and other uses of neural networks in police decision making.
+\newblock \emph{Frontiers in Psychology}, 12:587943, 2021.
+\newblock \url{https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.587943/full}.
+
+\bibitem{ObagbuwaAbidoye2021}
+Ibidun Christiana Obagbuwa, Ademola P. Abidoye.
+\newblock South Africa Crime Visualization, Trends Analysis and Prediction Using Machine Learning Linear Regression Technique.
+\newblock \emph{Applied Computational Intelligence and Soft Computing}, 2021.
+\newblock \url{https://doi.org/10.1155/2021/5537902}.
+
+\bibitem{Kshatri2022}
+Sapna Singh Kshatri et al.
+\newblock An Empirical Analysis of Machine Learning Algorithms for Crime Prediction Using Stacked Generalisation – An Ensemble Approach.
+\newblock In \emph{IEEE Access / IEEE International Conference}, 2022.
+\newblock \url{https://ieeexplore.ieee.org/document/9410543}.
+
+\bibitem{PopCenter2002}
+Clarke, R. V., & Felson, M.
+\newblock Opportunity Makes the Thief: Practical Theory for Crime Prevention.
+\newblock \emph{Crime Prevention Studies}, 2002.
+\newblock \url{https://popcenter.asu.edu/sites/g/files/litvpz3631/files/opportunity_makes_the_thief.pdf}.
+
+\bibitem{RFBerlin2025}
+RF Berlin Analytics.
+\newblock Predictive Crime Analysis and Urban Security Report.
+\newblock 2025.
+\newblock \url{https://www.rfberlin.com/wp-content/uploads/2025/06/25025.pdf}. 
 
 \end{thebibliography}
 
