@@ -27,6 +27,8 @@
 \begin{document}
 \maketitle
 
+% =====================================================================================
+
 \section{Introduction}
 
 This project aims to predict the weekly occurrence of major crime types across Los Angeles using publicly available data from the Los Angeles Police Department. Predicting crime patterns is a valuable tool for law enforcement and city planners, as it supports proactive decision-making, effective resource allocation, and early detection of emerging hot spots [1]. The model developed in this work predicts whether a given crime type will occur in a particular region of the city during a specific week.
@@ -36,6 +38,8 @@ Our approach frames the problem as a multi-label binary classification task, whe
 Many existing works similarly tackle the task of crime prediction, albeit not necessarily with our identical approach or goal. For example, Ibrahim et al. (2024) combined convolutional neural networks with k‑means clustering to predict crime rates, outperforming traditional models [2]. Ladha and Patyal (2024) compared k‑nearest neighbours, SVM, and decision trees to classify regions into high, medium, or low crime [3]. Walczak (2021) used neural models with geospatial and temporal inputs to predict both crime type and location, aligning most closely with our task [4]. Obagbuwa and Abidoye (2021) applied linear regression to forecast urban crime incidents in South African cities [5]. Kshatri et al. (2021) applied a stacking‑ensemble SVM in India and achieved very high accuracy, showing that combining models can improve predictions [6].
 
 Overall, many studies have advanced crime forecasting most commonly through deep learning. None adopt a unit of analysis as proposed in this project, allowing our approach to attempt a new gap. However, insights from these studies, especially their emphasis on handling imbalance, preventing overfitting, and calibrating predictions, would guide updated modelling choices, discussed in our progress section.
+
+% =====================================================================================
 
 \section{Dataset}
 
@@ -60,6 +64,8 @@ To create a dataset suitable for the intended model, however, several restructur
 
 After preprocessing and transformation, the final dataset consisted of grid cell-week units, each with counts for every crime type.
 
+% =====================================================================================
+
 \section{Features and Inputs}
 
 The input features for the model include the aforementioned spatial and temporal identifiers, as well as engineered inputs derived from the dataset.
@@ -77,6 +83,8 @@ Feature sets were varied systematically across averages. As a baseline, only the
 
 No representation learning methods were used; all features were manually engineered to maintain full interpretability.
 
+% =====================================================================================
+
 \section{Implementation}
 % (20%) Implementation
 % Describe all model versions used.
@@ -85,16 +93,22 @@ No representation learning methods were used; all features were manually enginee
 % Include ablations if model has many parts.
 % If model underperformed a baseline, explain why.
 
+% =====================================================================================
+
 \section{Evaluation}
 % (15%) Evaluation
 % Describe evaluation strategy: train/val/test splits, distributions.
 % Identify evaluation metrics and justify them.
 % Compare to progress report metrics and whether they were adequate.
 
+% =====================================================================================
+
 \section{Progress}
 % (10%) Progress
 % Reflect on original plan vs. what happened.
 % Explain deviations from plan and why.
+
+% =====================================================================================
 
 \section{Error Analysis}
 
@@ -133,6 +147,8 @@ This matrix shows errors are not independent; the model will systematically misp
     \caption{Co-occurrence errors between classes.}
 \end{figure}
 
+% =====================================================================================
+
 \section*{Team Contributions}
 % (5%) Team Contributions
 % Provide at least one sentence per team member.
@@ -144,8 +160,9 @@ This matrix shows errors are not independent; the model will systematically misp
     \item Stanley: Sample text.
 \end{itemize}
 
-\vspace{1em}
+% =====================================================================================
 
+\vspace{1em}
 \renewcommand{\refname}{}
 \vspace{-3em}
 
