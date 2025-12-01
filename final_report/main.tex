@@ -28,24 +28,54 @@
 \maketitle
 
 \section{Introduction}
-% (10%) Introduction
-% Copy over and refine the motivation/problem description from progress report.
-% Include at least 7 references.
-% Discuss related work influencing your direction after the progress report.
+
+This project aims to predict the weekly occurrence of major crime types across Los Angeles using publicly available data from the Los Angeles Police Department. Predicting crime patterns is a valuable tool for law enforcement and city planners, as it supports proactive decision-making, effective resource allocation, and early detection of emerging hot spots [1]. The model developed in this work predicts whether a given crime type will occur in a particular region of the city during a specific week.
+
+Our approach frames the problem as a multi-label binary classification task, where each label represents a different crime type. By incorporating short-term historical data through rolling temporal features, we enable the model to capture recent trends in crime dynamics. The focus is on establishing a clear and explainable baseline model that accurately captures temporal dependencies while serving as a foundation for more advanced methods.
+
+Many existing works similarly tackle the task of crime prediction, albeit not necessarily with our identical approach or goal. For example, Ibrahim et al. (2024) combined convolutional neural networks with k‑means clustering to predict crime rates, outperforming traditional models [2]. Ladha and Patyal (2024) compared k‑nearest neighbours, SVM, and decision trees to classify regions into high, medium, or low crime [3]. Walczak (2021) used neural models with geospatial and temporal inputs to predict both crime type and location, aligning most closely with our task [4]. Obagbuwa and Abidoye (2021) applied linear regression to forecast urban crime incidents in South African cities [5]. Kshatri et al. (2021) applied a stacking‑ensemble SVM in India and achieved very high accuracy, showing that combining models can improve predictions [6].
+
+Overall, many studies have advanced crime forecasting most commonly through deep learning. None adopt a unit of analysis as proposed in this project, allowing our approach to attempt a new gap. However, insights from these studies, especially their emphasis on handling imbalance, preventing overfitting, and calibrating predictions, would guide updated modelling choices, discussed in our progress section.
 
 \section{Dataset}
-% (5%) Dataset
-% Describe dataset properties and preprocessing.
-% If annotated, describe annotation procedure.
-% Describe any changes since progress report (new sources, augmentation, etc.).
-% If unchanged, may reuse progress report content.
+
+The raw dataset consisted of over 1 million individual crime reports, transcribed from the original paper records. Each report included a date, time of occurrence, location, crime code, victim age, and other logistical attributes. The original dataset \href{https://www.kaggle.com/datasets/cityofLA/crime-in-los-angeles}{may be found here}.
+
+To create a dataset suitable for the intended model, however, several restructuring steps were necessary.
+
+\subsection{Preprocessing}
+\begin{enumerate}
+    \item Normalizing all column names in the provided \texttt{.csv} file, including aligning capitalization and trimming spaces.
+    \item Dropping rows missing a time, date, location, or crime description, since these were essential identifiers.
+    \item Dropping rows with coordinates outside the latitude and longitude bounds around Los Angeles (LA) (including a buffer margin).
+    \item Grouping similar, overly granular crimes into classes via semantic clustering. For instance, theft of different dollar amounts is recorded as separate categories, which may have utility in law settings, but is an arbitrary distinction for our purposes. As an update from our previous version, we used sentence embeddings and k-means clustering from pre-trained models to combine similar descriptions into the most common of their cluster.
+\end{enumerate}
+
+\subsection{Transformations}
+\begin{enumerate}
+    \item Spatial aggregation: The LA area (including a buffer margin) was divided into 2 km$^2$ grid cells, with each cell treated as a single ``spatial unit.''
+    \item Temporal aggregation: Crimes were grouped by week number and year. For example, crimes occurring on Tuesday and Wednesday of the 3rd week of a year would belong to the same ``temporal unit.''
+    \item Count aggregation: The combined spatial-temporal unit (grid cell $\times$ week) was used to count the number of crimes per type.
+\end{enumerate}
+
+After preprocessing and transformation, the final dataset consisted of grid cell-week units, each with counts for every crime type.
 
 \section{Features and Inputs}
-% (5%) Features and Inputs
-% Describe model inputs and feature engineering / representation learning.
-% Explain why these features were used.
-% Describe any feature selection or augmentation.
-% Explain how feature variants were used in experiments.
+
+The input features for the model include the aforementioned spatial and temporal identifiers, as well as engineered inputs derived from the dataset.
+
+\subsection{Augmentations}
+\begin{itemize}
+    \item Rolling averages: Per crime type, the rolling average over the previous two weeks within the same grid cell was calculated. \textit{Rationale:} Crime can exhibit short-term "inertia", where activity in recent weeks influences upcoming activity. Including rolling averages as a new feature helps the model capture these temporal dependencies more effectively than raw counts alone.
+    \item Neighbour activity scores: A distance-weighted score summarizing crime activity in surrounding grid cells, computed using a 5\,$\times$\,5 spatial window. \textit{Rationale:} Crime can exhibit spatial "spillover", meaning events in one area can influence nearby areas. Aggregating nearby activity encodes this spatial correlation directly into the model.
+    \item Temporal effects: Week-of-year encodings and holiday-related features were added using simple Python utilities and manual calculations. \textit{Rationale:} Crime types can vary seasonally (e.g., holidays, weather patterns, academic calendars). Encoding seasonal and calendar-driven effects helps the model learn these periodic fluctuations.
+\end{itemize}
+
+Each input is represented as a single feature vector per unit, with multiple outputs corresponding to the counts of each crime type, allowing the model to predict multiple targets simultaneously.
+
+Feature sets were varied systematically across averages. As a baseline, only the raw weekly crime counts were provided. Next, the raw counts combined with the temporal features were tested. Next, the raw counts combined with the spatial features were tested. Finally, a complete model considering all features was tested. This allowed observation of how each feature "category" impacted predictive performance. Based on experimentation, inclusion of all features yielded the best results, which may be attributed to data quality and relative sparseness of crime.
+
+No representation learning methods were used; all features were manually engineered to maintain full interpretability.
 
 \section{Implementation}
 % (20%) Implementation
