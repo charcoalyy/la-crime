@@ -108,6 +108,10 @@ No representation learning methods were used; all features were manually enginee
 % Reflect on original plan vs. what happened.
 % Explain deviations from plan and why.
 
+In terms of data processing, our previous approach to grouping similar crimes was simplistic, using arbitrary literal word-by-word comparisons for merging. We refined this by using a pre-trained model to semantically group crime descriptions, which produces more meaningful clusters. This adjustment was not planned as part of the original progress report, but was necessary to improve the quality of the dataset and ensure similar crimes are treated consistently.
+
+In terms of feature engineering, we largely followed the plan outlined in the progress report, but made adjustments based on empirical observations. We tested multiple versions of rolling averages for each crime type and found that long-term windows were ineffective due to crime sparsity. For spatial features, we experimented with several grid sizes and aggregation methods before determining that a distance-weighted neighbor activity score provided the best representation of local crime correlations. Therefore, while overarching feature ideas were added as intended, the specific implementations evolved as we discovered which approaches were most suitable for the data without over-complicating the model space.
+
 % =====================================================================================
 
 \section{Error Analysis}
