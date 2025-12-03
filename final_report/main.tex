@@ -204,7 +204,6 @@ The improved logistic regression model outperformed the original model across mo
 
 For labels with extremely low prevalence, the majority baseline performed competitively, illustrating that accuracy alone is insufficient for evaluating highly imbalanced datasets. Metrics such as recall and F1-score are necessary to assess true performance.
 
-
 % =====================================================================================
 
 \section{Evaluation}
@@ -231,9 +230,9 @@ In terms of feature engineering, we largely followed the plan outlined in the pr
 To analyze model errors, we performed per-label metric calculation, confusion matrices, co-occurrence error analysis, and inspection of high-error samples. A clear and consistent pattern observed is that rarer crimes with distinctive patterns tend to be predicted more reliably, while common crimes with variable patterns are much harder to capture.
 
 \subsection{Per-label Metrics}
-For each crime type, precision, recall, F1 score, and accuracy were calculated, demonstrating high variability across labels when plotted (Figure 1). Low precision (e.g., burglary) shows the model frequently predicts that label incorrectly; low recall means it  fails to detect real cases of that crime; low F1 reflects poor overall performance on that label. Crimes with more consistent patterns (e.g., stalking, discharge firearms) have higher precision, recall, and F1, indicating the model can identify them more reliably. 
+For each crime type, precision, recall, F1 score, and accuracy were calculated, demonstrating high variability across labels when plotted (Figure 1). Low precision (e.g., burglary) shows the model frequently predicts that label incorrectly; low recall means it  fails to detect real cases of that crime; low F1 reflects poor overall performance on that label. Crimes with more consistent patterns (e.g., stalking, discharge firearms) have mildly higher precision, recall, and F1 scores.
 
-These metrcs highlight an issue of class imbalance, which means measures of accuracy may not represent model quality. Potential improvements would involve more sophisticated class weighting, oversampling to balance training, or considering multi-stage models.
+These metrics highlight an issue of class imbalance, which means measures of accuracy do not fully represent model quality. Potential improvements include more sophisticated class weighting, oversampling of underrepresented crimes, or the design of multi-stage models tailored to different crime frequencies.
 
 \begin{figure}[h]
     \centering
@@ -242,9 +241,9 @@ These metrcs highlight an issue of class imbalance, which means measures of accu
 \end{figure}
 
 \subsection{Confusion Matrices}
-The confusion matrices (Figure 2) show that the model overwhelmingly predicts the absence of crimes. We see very high true negative rates across most labels, especially for rare crimes like stalking or child annoying. On the other hand, true positives are low or nearly zero for most classes, indicating the model rarely predicts that a crime occurs. False negatives are seen in the high-frequency crimes, such as burglary and petty theft, meaning the model misses actual occurrences. Some mid-frequency crimes, like burglary from vehicle or vehicle stolen, show a mix of false positives and true positives.
+The confusion matrices (Figure 2) show that the model predominantly predicts the absence of crimes. We see very high true negative rates across most labels, especially for rare crimes like stalking or child annoying. On the other hand, true positives are low or nearly zero for most classes, indicating the model rarely predicts that a crime occurs. False negatives are seen in the high-frequency crimes, such as burglary and petty theft, meaning the model misses actual occurrences. Some mid-frequency crimes, like burglary from vehicle or vehicle stolen, show a mix of false positives and true positives.
 
-These matrices communicate the model is conservative, accurately detecting absence but failing to identify most actual crime events due to sparsity. Potential improvements would involve using new data sources to incorporate more contextual spatial features, tuning thresholds per crime type, and exploring temporal sequence models.
+These matrices communicate the model is conservative, accurately detecting absence but failing to identify most actual crime events due to sparsity. Potential improvements include integrating additional contextual spatial features from secondary data sources, tuning thresholds on a per-class basis, and exploring temporal sequence models.
 
 \begin{figure}[h]
     \centering
@@ -255,13 +254,18 @@ These matrices communicate the model is conservative, accurately detecting absen
 \subsection{Co-occurrence Errors}
 The co-occurrence matrix (Figure 3) shows how often pairs of crimes are mispredicted together in the same temporal-spatial unit. Noticeably high counts between frequent, related crimes (e.g., burglary, petty theft, simple assault) show that when the model fails, it will mispredict multiple common crimes simultaneously. Rare crimes (e.g., stalking) have low co-occurrence counts with other labels, which is in line with the model's tendency to predict absences. 
 
-This matrix shows errors are not independent; the model will systematically mispredict multiple crimes during weeks of elevated occurrences. We can see this concept reflected in select high-error samples, where there are 5 rows for which all classes are incorrectly predicted. Potential improvements would involve taking approaches to explicitly model correlations between crime types to reduce correlated mispredictions.
+This matrix shows errors are not independent; the model will systematically mispredict multiple crimes during weeks of elevated occurrences. We can see this concept reflected in select high-error samples, where there are 20+ rows for which 15+ out of 20 classes are incorrectly predicted. Potential improvements include explicitly modeling inter-class correlations to reduce these systematic errors.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\linewidth, keepaspectratio]{data/error_analysis/plots/cooccurrence_errors.png}
     \caption{Co-occurrence errors between classes.}
 \end{figure}
+
+\subsection{Conclusion}
+The error analysis methods performed demonstrate the underlying difficulty of predicting crime at the very granular temporal-spatial level chosen for this project. Crime data shows extreme sparsity and high variability across labels, limiting reliable predictive power of standard models. This is exacerbated especially by common crimes. 
+
+The temporal and spatial clustering of events also introduces complex dependencies that a single-stage model is unable to effectively learn. Addressing these challenges will require handling class imbalance, better capturing spatio-temporal patterns, and integrating contextual features, since crime occurrence data in and of itself is sparse and stochastic. One potential direction is investigating hybrid models: using simple regression baselines with neural network extensions for fine-grained dependencies applied only where signal exists.
 
 % =====================================================================================
 
