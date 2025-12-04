@@ -13,11 +13,10 @@ except ImportError:
     print("[visualization.py] geopandas / shapely not installed. Map overlays disabled.")
 
 '''
-AI DISCLAIMER NOTE:
-7 prompts which are noted in the code below, carbon usage for this file:
+AI DISCLAIMER NOTE (ChatGPT Model 5):
+15 prompts which are noted in the code below, carbon usage for this file:
 
-12*4.32g = 51.84g CO2
-
+15 * 4.32g = 64.8g CO2
 '''
 
 # ============================
@@ -25,6 +24,11 @@ AI DISCLAIMER NOTE:
 # ============================
 
 def get_paths(filename, base_dir="data/error_analysis"):
+    """
+    1 prompt used:
+    Asked ChatGPT to create a helper function that constructs both CSV and PNG save paths 
+    and auto-creates the plots directory.
+    """
     csv_path = os.path.join(base_dir, f"{filename}.csv")
     plot_dir = os.path.join(base_dir, "plots")
     os.makedirs(plot_dir, exist_ok=True)
@@ -33,6 +37,13 @@ def get_paths(filename, base_dir="data/error_analysis"):
 
 
 def get_la_shapefile(path="data/maps/la_shapefile/Neighborhood_Councils_(Certified).shp"):
+    """
+    1 prompt used:
+    Requested ChatGPT to implement a robust shapefile loader including:
+    - geopandas availability check
+    - file existence check
+    - clear error messages
+    """
     if not GEOPANDAS_AVAILABLE:
         raise ImportError("Install geopandas + shapely for LA map overlays.")
     if not os.path.exists(path):
@@ -41,6 +52,10 @@ def get_la_shapefile(path="data/maps/la_shapefile/Neighborhood_Councils_(Certifi
 
 
 def parse_grid_lat_lon(series):
+    """
+    1 prompt used:
+    Asked ChatGPT to write a regex-based parser that extracts lat/lon from grid_id strings.
+    """
     coords = series.str.extract(r"grid_lat(?P<lat>-?\d+\.\d+)_lon(?P<lon>-?\d+\.\d+)")
     coords["lat"] = coords["lat"].astype(float)
     coords["lon"] = coords["lon"].astype(float)
@@ -48,6 +63,10 @@ def parse_grid_lat_lon(series):
 
 
 def grid_points_geodf(df, crs="EPSG:4326"):
+    """
+    1 prompt used:
+    ChatGPT assisted in converting latitude/longitude columns into a GeoDataFrame using shapely points.
+    """
     coords = parse_grid_lat_lon(df["grid_id"])
     return gpd.GeoDataFrame(
         df.copy(),
@@ -57,14 +76,23 @@ def grid_points_geodf(df, crs="EPSG:4326"):
 
 
 def get_crime_columns(df):
+    """
+    1 prompt used:
+    Asked ChatGPT to generate helper function filtering out identifier columns.
+    """
     exclude = {"grid_id", "week_year", "week_number"}
     return [c for c in df.columns if c not in exclude]
+
 
 # ============================
 # Error-analysis plotting
 # ============================
 
 def plot_evaluation_metrics(filename="evaluation_metrics"):
+    """
+    1 prompt used:
+    Assistance requested for designing a bar-plot layout for precision/recall/F1/accuracy.
+    """
     csv_path, plot_path = get_paths(filename)
     df = pd.read_csv(csv_path, index_col=0).drop("Overall", errors="ignore")
     fig, ax = plt.subplots(figsize=(14, 7))
@@ -79,6 +107,11 @@ def plot_evaluation_metrics(filename="evaluation_metrics"):
 
 
 def plot_confusion_matrices(filename="confusion_matrices"):
+    """
+    2 prompts used:
+    - Prompted ChatGPT for constructing a multi-row/multi-column subplot grid based on #labels.
+    - Prompted ChatGPT to overlay TN/FP/FN/TP text directly onto heatmap squares.
+    """
     csv_path, plot_path = get_paths(filename)
     df = pd.read_csv(csv_path, index_col=0).drop("Overall", errors="ignore")
     n = len(df)
@@ -112,6 +145,10 @@ def plot_confusion_matrices(filename="confusion_matrices"):
 
 
 def plot_cooccurrence_errors(filename="cooccurrence_errors"):
+    """
+    1 prompt used:
+    ChatGPT suggested normalizing rows by percentage and formatting a heatmap with annotation.
+    """
     csv_path, plot_path = get_paths(filename)
     df = pd.read_csv(csv_path, index_col=0)
     df_norm = df.div(df.sum(axis=1), axis=0) * 100
@@ -132,6 +169,7 @@ def plot_cooccurrence_errors(filename="cooccurrence_errors"):
     plt.savefig(plot_path)
     plt.close()
 
+
 # ============================
 # Spatio-temporal LA map overlays
 # ============================
@@ -144,6 +182,13 @@ def plot_weekly_la_map(
     shapefile_path="data/maps/la_shapefile/Neighborhood_Councils_(Certified).shp",
     output_name=None,
 ):
+    """
+    3 prompts used:
+    - Prompted ChatGPT to write logic for choosing GT vs predicted CSV.
+    - Prompted ChatGPT to compute intensity values (single crime vs all crimes).
+    - Prompted ChatGPT to scale point sizes based on relative intensity.
+    """
+
     if not GEOPANDAS_AVAILABLE:
         return
 
@@ -169,6 +214,10 @@ def plot_weekly_la_map(
     la = get_la_shapefile(shapefile_path)
 
     if la.crs != gdf.crs:
+        """
+        1 prompt used:
+        Asked ChatGPT how to safely convert GeoDataFrame coordinate systems.
+        """
         gdf = gdf.to_crs(la.crs)
 
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -194,6 +243,10 @@ def plot_weekly_la_map(
     out_dir = "data/maps/plots"
     os.makedirs(out_dir, exist_ok=True)
     if output_name is None:
+        """
+        1 prompt used:
+        Asked ChatGPT to design automatic output filename formatting.
+        """
         crime_name = crime_type.replace(" ", "_") if crime_type else "all_crimes"
         base = "gt" if use_ground_truth else "pred"
         output_name = f"{base}_{week_year}_{week_number}_{crime_name}"
@@ -204,11 +257,16 @@ def plot_weekly_la_map(
     plt.close()
     print(f"Saved map: {out_path}")
 
+
 # ============================
 # Main
 # ============================
 
 def main():
+    """
+    1 prompt used:
+    ChatGPT assisted in designing a clean orchestrator function calling all plots.
+    """
     plot_evaluation_metrics()
     plot_confusion_matrices()
     plot_cooccurrence_errors()
