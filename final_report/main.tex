@@ -223,6 +223,8 @@ In terms of data processing, our previous approach to grouping similar crimes wa
 
 In terms of feature engineering, we largely followed the plan outlined in the progress report, but made adjustments based on empirical observations. We tested multiple versions of rolling averages for each crime type and found that long-term windows were ineffective due to crime sparsity. For spatial features, we experimented with several grid sizes and aggregation methods before determining that a distance-weighted neighbor activity score provided the best representation of local crime correlations. Therefore, while overarching feature ideas were added as intended, the specific implementations evolved as we discovered which approaches were most suitable for the data without over-complicating the model space.
 
+A significant portion of our progress involved refining the modelling pipeline itself. Our initial logistic regression model was intentionally simple, using only rolling averages as features and lacking any regularization or class imbalance handling. As we progressed, it became clear that this approach was insufficient as the model frequently collapsed into predicting only the majority class, and several labels showed signs of overfitting due to the unrestricted weight magnitudes. These issues motivated the development of the updated \texttt{updatedModel.py}, which introduced L1/L2 regularization, expanded feature sets, explicit class weighting, and calibrated decision thresholds. This transition was not part of the original project plan, but it became necessary after observing the behaviour of the first model and realizing that a more robust, imbalance-aware framework was essential for meaningful multi-label crime prediction. We also developed a baseline model (as explained in the implementation section) that was based on a majority vote system, such that we could see how our regression performed against the initial baseline. This followed our plan from the progress report, as the goal was to update the model with better feature engineering and regularization so to see if the overall model performance improves. 
+
 % =====================================================================================
 
 \section{Error Analysis}
@@ -276,7 +278,7 @@ The temporal and spatial clustering of events also introduces complex dependenci
 
 \begin{itemize}
     \item Alina: Defined what the training dataset would look like; programmed refinements for data preprocessing and feature engineering; programmed new error analysis methods; wrote the report sections for updated introduction, updated dataset, updated features, progress, and error analysis.
-    \item Arjun: Updated the model to include L1/L2 regularization along with adding class weighting and threshold tuning. Added the baseline model that does a majority class predictor to act as a baseline against which our later models were compared. Wrote the report section for the updated implementation. 
+    \item Arjun: Updated the model to include L1/L2 regularization along with adding class weighting and threshold tuning. Added the baseline model that does a majority class predictor to act as a baseline against which our later models were compared. Wrote the report section for the updated implementation. Explained the model updates in the progress section. 
     \item Stanley: Sample text.
 \end{itemize}
 
