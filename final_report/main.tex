@@ -212,6 +212,51 @@ For labels with extremely low prevalence, the majority baseline performed compet
 % Identify evaluation metrics and justify them.
 % Compare to progress report metrics and whether they were adequate.
 
+To evaluate our models, we divided the processed dataset into training, validation, and testing splits based on temporal ordering. Because crime patterns evolve over time, we used a chronological split rather than random shuffling to avoid information leakage. Specifically, data from 2010--2015 was used for training, 2016 for validation, and the first half of 2017 for testing. This ensured that all models were evaluated on future crime patterns rather than past ones.
+
+\subsection{Label Distributions and Class Imbalance}
+
+Crime types exhibit extreme imbalance, with many labels occurring in fewer than 5\% of spatio-temporal units. This imbalance strongly influenced both model behavior and choice of evaluation metrics. Accuracy alone is misleading under such conditions because predicting ``no crime'' yields high accuracy for most labels. Therefore, we rely on:\\
+\begin{itemize}
+    \item \textbf{Precision} — how often predicted crimes were correct.
+    \item \textbf{Recall} — how often true crimes were successfully detected.
+    \item \textbf{F1 score} — harmonic mean of precision and recall, balancing the two.
+    \item \textbf{Per-label accuracy} — included for completeness, but interpreted cautiously.
+\end{itemize}
+
+These metrics were computed independently for each of the 20 crime categories, producing a detailed per-class performance profile.
+
+\subsection{Evaluation Procedure}
+
+For each model variant (majority baseline, original logistic regression, improved logistic regression), predictions were generated on the held-out test set. We computed all classification metrics per label and averaged them to obtain macro-level summaries. Confusion matrices were also constructed for every crime type to break down true positives, false positives, false negatives, and true negatives. This helped diagnose systematic patterns such as frequent under-prediction of high-volume crimes.
+
+In accordance with the final project requirements \cite{FinalProjectInstructions}, the evaluation strategy also includes comparisons to earlier metrics from our progress report. The expanded feature sets and class-balancing modifications introduced after the progress milestone led to measurable improvements in recall and F1 for multiple low-frequency crimes. However, high-frequency crimes (e.g., burglary, petty theft) remained difficult to capture reliably.
+
+\subsection{Hotspot Visualization Evaluation}
+
+In addition to numeric metrics, we evaluated the model’s spatial behaviour by visualizing predicted crime hotspots for a representative week in the test set. Figure~\ref{fig:hotspots} shows predictions for Week 10 of 2016, where each grid cell is plotted over the Los Angeles neighborhood map and shaded according to the predicted number of crimes.
+
+This visualization is interpreted as follows:
+\begin{itemize}
+    \item \textbf{Color scale:} Darker red indicates a higher predicted crime count for that grid cell; lighter colors represent low predicted activity; white corresponds to zero predicted crimes.
+    \item \textbf{Spatial grounding:} The background polygons represent official LA neighborhoods, allowing the prediction map to be interpreted in a geographically meaningful way.
+    \item \textbf{Concentration of hotspots:} Predicted activity is concentrated in South Los Angeles and the Wilmington--San Pedro corridor. These regions historically experience higher crime density, and the model successfully reproduces this broad pattern.
+    \item \textbf{Lack of northern predictions:} Minimal predicted activity appears in central and northern LA. This reflects both the sparsity of crime in those regions and the model's conservative tendency, as identified in earlier quantitative evaluations.
+\end{itemize}
+
+Interpreting the map alongside the confusion matrices and F1-scores shows that while the model is capable of learning coarse spatial tendencies (e.g., identifying general high-crime regions), it struggles to produce fine-grained spatial variation and may underpredict activity in moderately dense areas. This reinforces the conclusion that although the model captures macro-spatial patterns, additional spatial features or hierarchical models would be necessary to generate more accurate neighborhood-level hotspot predictions.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{data/maps/plots/pred_2016_10_all_crimes.png}
+    \caption{Predicted crime hotspots for Week 10 of 2016. Darker colors indicate higher predicted crime activity.}
+    \label{fig:hotspots}
+\end{figure}
+
+\subsection{Adequacy of Metrics}
+
+The metrics used in the progress report (primarily accuracy) were insufficient due to the class imbalance inherent in crime data. The final evaluation relies on recall and F1—which reveal meaningful deficiencies in detecting actual crime occurrence—and confusion matrices, which highlight systematic prediction biases. This expanded evaluation framework aligns with the final project guidelines and provides an accurate reflection of model performance.
+
 % =====================================================================================
 
 \section{Progress}
@@ -279,7 +324,7 @@ The temporal and spatial clustering of events also introduces complex dependenci
 \begin{itemize}
     \item Alina: Defined what the training dataset would look like; programmed refinements for data preprocessing and feature engineering; programmed new error analysis methods; wrote the report sections for updated introduction, updated dataset, updated features, progress, and error analysis.
     \item Arjun: Updated the model to include L1/L2 regularization along with adding class weighting and threshold tuning. Added the baseline model that does a majority class predictor to act as a baseline against which our later models were compared. Wrote the report section for the updated implementation. Explained the model updates in the progress section. 
-    \item Stanley: Sample text.
+    \item Stanley: Built the visualization and evaluation components (hotspot maps, metrics, and error plots), ran and validated the full modeling pipeline, wrote the evaluation section, and integrated all figures into the final report.
 \end{itemize}
 
 % =====================================================================================
